@@ -1,125 +1,160 @@
-# Linked List implementation in Python
-# Coded 25/09/2019
+# Linked List Implementation
+# Coded 27/09/2019
 
 '''
-SOLUTION NOT WORKING, FIX...
+TO FIX...
 
-1. Make it ordered linked list
-2. Implement insertion algo correctly
+1. INSERTION ALGO (LESS THAN PROBLEM)
+2. UI
 
 '''
 
+NULL_POINTER = -1  # Set null pointer to -1
+
+import sys
 
 class Node:
 
-    data = ""  # No data to begin with
-    pointer = None  # None ptr will be taken as empty set
+    def __init__(self):
+        self.data = ""
+        self.pointer = NULL_POINTER
 
-    def __init__(self, data_:str, pointer_:int):
-        self.data = data_
-        self.pointer = pointer_
+    def __lt__(self, other):  # Code random behaviour for comparisons, so class behaves like record
+        print(True)
+        lowerThan = False  # Create flag to keep track of comparison status
+        dataSelf = [ord(x) for x in self.data]  # ASCII data for string1
+        dataNew = [ord(x) for x in other.data]  # ASCII data for string2
 
-class LinkedList:
+        i = 0  # Read strings in order from left to right
+        while i < len(dataSelf) and i < len(dataNew):  # Both strings still have characters to compare 
+            if dataSelf[i] < dataNew[i]:  # ASCII value @ index i lower in dataSelf
+                lowerThan = True  # Set flag to True
+                break
 
-    startPtr = None
-    freeListPtr = 0
-    thisNodePtr = -1
-    previousNodePtr = -1
-    listNode = []
+            i += 1
 
-    def __init__(self, length:int):
+        return lowerThan  # Return comparison result
 
-        for i in range(length-1):
-            data = str(input(f"Enter data for node {i}: "))
-            n = Node(data, i+1)  # Create first 6 nodes with pointers mapping consecutive values
-            self.listNode.append(n)
-            self.startPtr = 0  # If at least one value inserted, startPtr = first elt.
 
-        self.listNode.append(Node("", None))  # Last position append node with NullPointer
+def createList():
+    StartPointer = NULL_POINTER
+    FreeListPointer = 0
+    LinkedL = [Node() for i in range(7)]
+    for i in range(6):
+        LinkedL[i].pointer = i + 1
 
-    def output(self):
+    LinkedL[6].pointer = NULL_POINTER
+
+    return [LinkedL, StartPointer, FreeListPointer]
         
-        print("{0:^10} | {1:^10}".format("DATA", "POINTER"))
-        print("*"*25)
 
-        for node in range(len(self.listNode)):
-            data = self.listNode[node].data
-            if len(data) > 6:
-                data = data[:6]  # Crop data when outputting if larger than 6 (for aesthetic reasons)
-            print(f"[{data:^8}] | [{self.listNode[node].pointer}]")
+def insertNode(LinkedL: list, SP: int, FP: int, dataItem: str):
 
-        print("*"*25)
+    if FP != NULL_POINTER:  # There is space in the array
+        # Take node from free list and store the data item
+        NewNodePtr = FP
+        LinkedL[NewNodePtr].data = dataItem
+        FP = LinkedL[FP].pointer
+        # Find insertion sort
+        thisNodePtr = SP
+        previousNodePtr = NULL_POINTER
 
-    
-    def findNode(self, dataItem:str):
-        currentNodePtr = self.startPtr  # Start @ beginning of list
-        
-        while currentNodePtr != None \
-                and self.listNode[currentNodePtr].data != dataItem:  
-                
-            # WHILE not end of the list AND Item not found in list
+        while thisNodePtr != NULL_POINTER and \
+                LinkedL[thisNodePtr] < LinkedL[NewNodePtr]:  # Pass node, otherwise have to override string function
+            print(True)
+            # While not at the end of the list and current item is less than new dataItem (not in alphabetical order)
+            previousNodePtr = thisNodePtr  # Remember thisNodePtr
             # Follow the pointer to the next node
+            thisNodePtr = LinkedL[thisNodePtr].pointer
 
-            currentNodePtr = self.listNode[currentNodePtr].pointer  
-
-        return currentNodePtr
-
-    def delete(self, dataItem:str):
-
-        self.thisNodePtr = self.startPtr  # Start @ beginning of list
-
-        while self.thisNodePtr != None and \
-            self.listNode[self.thisNodePtr].data != dataItem:  # While not end of the list
-
-            self.previousNodePtr = self.thisNodePtr  # Remember this node and follow the pointer to next node
-            self.thisNodePtr = self.listNode[self.thisNodePtr].pointer
-
-        if self.thisNodePtr != None:  # Node exists in list
-
-            if self.thisNodePtr == self.startPtr:  # First node to be deleted
-                self.startPtr = self.listNode[self.startPtr].pointer  # Update startPtr
-            else:
-                self.listNode[self.previousNodePtr].pointer = self.listNode[self.thisNodePtr].pointer
-
-            self.listNode[self.thisNodePtr].pointer = self.freeListPtr
-            self.freeListPtr = self.thisNodePtr 
-
-    def insertNode(self, newItem:str):
-
-        if self.freeListPtr != None:  # There is space in the array
-
-            # Take node from free list and store data item
-            newNodePtr = self.freeListPtr
-            self.listNode[newNodePtr].data = newItem
-            self.freeListPtr = self.listNode[self.freeListPtr].pointer
-            # Find insertion point
-            self.thisNodePtr = self.startPtr  # Start at beginning of list
-            self.previousNodePtr = None
-            while self.thisNodePtr != None and \
-                ord(self.listNode[self.thisNodePtr].data[0]) < ord(newItem[0]):
-
-                # While not end of list or empty list
-                self.previousNodePtr = self.thisNodePtr  # Remember this node
-                # Follow the pointer to the next node
-                self.thisNodePtr = self.listNode[self.thisNodePtr].pointer
-
-            if self.previousNodePtr == None:  # Insert new node at start of list
-                self.listNode[newNodePtr].pointer = self.startPtr
-                self.startPtr = newNodePtr
+            if previousNodePtr == NULL_POINTER:
+                # Insert node @ start of the list
+                LinkedL[NewNodePtr].pointer = SP
+                print(SP)
+                SP = NewNodePtr
+                print(SP)
             else:  # Insert new node between previous node and this node
-                self.listNode[newNodePtr].pointer = self.thisNodePtr
-                self.listNode[self.previousNodePtr].pointer = newNodePtr
+                LinkedL[NewNodePtr].pointer = thisNodePtr
+                LinkedL[previousNodePtr].pointer = NewNodePtr
+
+    return (LinkedL, SP, FP)
+
+
+def findNode(LinkedL: list, SP: int, dataItem: str):
+    currentNodePtr = SP
+    while currentNodePtr != NULL_POINTER and \
+        LinkedL[currentNodePtr].data != dataItem:
+
+        currentNodePtr = LinkedL[currentNodePtr].pointer
+
+    return currentNodePtr
+
+def deleteNode(LinkedL: list, SP: int, FP: int, dataItem: str):
+    thisNodePtr = SP
+
+    while thisNodePtr != NULL_POINTER and \
+        LinkedL[thisNodePtr].data != dataItem:
+
+        previousNodePtr = thisNodePtr
+        thisNodePtr = LinkedL[thisNodePtr].pointer
+
+    if thisNodePtr != NULL_POINTER:
+        if thisNodePtr == SP:
+            SP = LinkedL[SP].pointer
+
+        else:
+            LinkedL[previousNodePtr].pointer = FP
+            FP = thisNodePtr
+
+    return (LinkedL, SP, FP)
+
+def output(LinkedL: list):
+
+    if len(LinkedL) != 0:
+        
+        print("\n{0:^10} | {1:^10} | {2:^10}".format("POSITION", "DATA", "POINTER"))
+        
+        for i in range(len(LinkedL)):
+            print("{0:^10} | {1:^10} | {2:^10}".format(i, LinkedL[i].data, LinkedL[i].pointer))
+
+    else:
+        print("\nNo data in the list")
+
+def end():
+    sys.exit()
 
 def main():
 
-    l = LinkedList(10)
-    l.output()
+    listData = createList()
 
-    l.insertNode("Miriam")
+    while True:  # Loop until user exits program
 
-    l.output()
+        options = {0 : ("Insert a Node into List", insertNode),
+                1 : ("Find a Node in the List", findNode),
+                2 : ("Delete a Node from the List", deleteNode),
+                3 : ("Output the Linked List", output),
+                4 : ("End the program", end)}
 
+        print("\nChoose an operation from the list... ")
+        
+        for key in options.keys():
+            print("{}: {}".format(key, options[key][0]))
+
+        decision = int(input("\nEnter your option: "))
+
+        if decision == 0:
+            item = input("Enter data for new node: ")
+            [listData[0], listData[1], listData[2]] = options[0][1](listData[0], listData[1], listData[2], item)
+        elif decision == 1:
+            item = input("Enter item to be searched: ")
+            options[1][1](listData[0], listData[1], item)
+        elif decision == 2:
+            item = input("Enter item to be deleted: ")
+            options[2][1](listData[0], listData[1], listData[2], item)
+        elif decision == 3:
+            options[3][1](listData[0])
+        elif decision == 4:
+            options[4][1]()
 
 if __name__ == "__main__":
     main()
-
